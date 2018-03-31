@@ -1,0 +1,24 @@
+{
+  "name": "co.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "co.js",
+  "dependencies": {
+    "browser-sync": "^2.18.12"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nfwyst/co.js.git"
+  },
+  "keywords": ["lib"],
+  "author": "nfwyst <nfwyst@gmail.com> (https://nfwyst.github.io/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nfwyst/co.js/issues"
+  },
+  "homepage": "https://github.com/nfwyst/co.js#readme"
+}
