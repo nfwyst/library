@@ -800,3 +800,80 @@ def_obj( 'groupBy', function( cb ) {
 
 	return res;
 });
+
+////////////////////////// DOM Element ////////////////////////
+// 判断一个对象是否是 DOM 元素
+def_obj('isDOM', function() {
+		var self = this;
+		if (typeof HTMLElement === 'object') {
+				if (self instanceof HTMLElement) {
+						return true;
+				} else {
+					return false;
+				}
+		} else {
+			return self.nodeType === 1 && typeof self.nodeName === 'string';
+		}
+});
+
+// 触发一个 DOM 的class
+def_obj('toggle', function(className) {
+	var self = this;
+	var isDom = self.isDOM();
+	if (isDom) {
+		if (self.classList.contains(className)) {
+				self.classList.remove(className);
+		} else {
+			self.classList.add(className);
+		}
+	}
+});
+
+// 获取一个 XMLHTTP
+var XMLHttpCreator = function() {
+		if (window.XMLHttpRequest) {
+			return new XMLHttpRequest();
+		} else if (window.ActiveXObject) {
+			return new ActiveXObject('Microsoft.XMLHTTP');
+		} else {
+			throw Error('cant create xmlhttp object');
+		}
+}
+
+
+// 对象之间通信 responseWay 自定义
+def_obj('call_obj', function(obj, msg, cb) {
+		return obj.receiveMsg(msg).response(cb);
+});
+
+def_obj('receiveMsg', function(msg){
+	  var self = this;
+		self.res_msg = msg;
+		return self;
+});
+
+def_obj('response', function(w) {
+		var self = this;
+		if (self.res_msg) {
+			if (self.responseWay) {
+				return self.responseWay(w);
+			}
+		} else {
+			return {
+				msg: null
+			};
+		}
+});
+
+///////// map object //////////
+var helper = {};
+function set(obj, key, value) {
+	if (!helper[obj]) {
+			helper[obj] = {};
+	}
+	helper[obj].key = value;
+}
+
+function get(obj, key) {
+	return helper[obj] && helper[obj][key];
+}
