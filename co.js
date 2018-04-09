@@ -8,7 +8,7 @@
 
 var util = {};
 
-//////////////////////////////// global ///////////////////////////////////
+//////////////////////////////// global /////////////////////////////////
 var def_arr = function(k, v) {
   Object.defineProperty(Array.prototype, k, {
     configurable: true,
@@ -77,7 +77,7 @@ function validate(arg) {
     throw new Error('tyep error: validate');
   }
 }
-///////////////////////////////////// core //////////////////////////////
+///////////////////////////////////// core ////////////////////////////
 //////////// base instructure
 // useage: console.red('number: ', 1234); for modern web browser
 def_log('red', function() {
@@ -300,7 +300,7 @@ def_obj('replaceAll', function(src, dest) {
     return self;
   }
 });
-//////////////////////////////////// util ////////////////////////
+//////////////////////////////////// util //////////////////////
 // call_one time
 util.call_one = function(func, item, id, obj) {
   return function() {
@@ -317,7 +317,7 @@ util.min = function(m, n) {
     ? m
     : n;
 }
-/////////////////////////////////// only for array ////////////////
+/////////////////////////////////// only for array //////////////
 // get a random item from array
 def_arr('getOne', function() {
   var self = this;
@@ -433,7 +433,7 @@ def_obj('keys_all', function() {
 
   return res;
 });
-///////////////////////////////// event /////////////////////////////
+///////////////////////////////// event ///////////////////////////
 // Limit the frequency of events happen
 util.debounce = function(context, func, wait, immediate) {
   var timeout;
@@ -487,14 +487,14 @@ util.once = function(func, context/* other arguments */) {
   })(func, args);
 }
 
-/////////////////////////////// CSS /////////////////////////////////
+/////////////////////////////// CSS ///////////////////////////////
 // margin-top ==> marginTop
 util.toCamel = function(str) {
   return str.replace(/-(\w)/g, function(str, item) {
     return item.toUpperCase()
   });
 };
-/////////////////////////////// Time ////////////////////////////////
+/////////////////////////////// Time //////////////////////////////
 // translate Date to standard time object
 util.timeTranslate = function(ti) {
   var t = new Date(ti),
@@ -670,7 +670,7 @@ def_obj('includes', function(arg) {
 
   return has;
 });
-/////////////////////////////////// Only For Array ///////////////////////////////
+/////////////////////////////////// Only For Array /////////////////////////////
 // if size is 2, src = [1,2,3,4,5], will be [[1,2],[3,4],5]
 def_arr('to_group', function(size) {
   var self = this,
@@ -794,7 +794,7 @@ def_obj('groupBy', function(cb) {
   return res;
 });
 
-////////////////////////// DOM Element //////////////////////
+////////////////////////// DOM Element ////////////////////
 // 判断一个对象是否是 DOM 元素
 def_obj('isDOM', function() {
   var self = this;
@@ -861,7 +861,7 @@ def_obj('response', function(w) {
   }
 });
 
-///////// map object ////////
+///////// map object //////
 var helper = {};
 function set(obj, key, value) {
   if (!helper[obj]) {
@@ -874,7 +874,7 @@ function get(obj, key) {
   return helper[obj] && helper[obj][key];
 }
 
-////////////////// extend the function ////////////////////
+////////////////// extend the function //////////////////
 ////////////////// fn.before(before_callback).after(after_callback)(callback, argumentListOf_fn)
 ////////////////// and the callback should be callback(before_callback_result, after_callback_result)
 /////////// the origin function return value is data.data
@@ -905,7 +905,7 @@ def_fun('after', function(callback) {
   }
 });
 
-///// curry the function ////////////
+///// curry the function //////////
 ///// like fn(a,b,c) should be fn(a)(b)(c);
 ///// like fn(a,b,c) could be fn(a), fn(b), fn(c)
 //// like fn(a,b,c) could be var i = fn(a)(b), i(c)
@@ -914,14 +914,14 @@ def_fun('curry', function(argNum, args) {
   if (!args) {
     var args = [];
   }
-	if (!argNum) {
-		var argNum = 0;
-	}
+  if (!argNum) {
+    var argNum = 0;
+  }
   return function(a) {
     args.push(a);
 
     if (argNum <= 1) {
-			// return self(...args);
+      // return self(...args);
       return self.apply(self, args);
     } else {
       return self.curry(--argNum, args);
@@ -930,71 +930,71 @@ def_fun('curry', function(argNum, args) {
 
 });
 
-///////// obj for server /////////////
+///////// obj for server ///////////
 /////// event('/path/to/server')(cb1,cb2,cb3)
 function event(url) {
-	try {
-		var el = new EventSource(url);
-	} catch (e) {
-		console.red(e.message);
-	} finally {
-		//
-	}
+  try {
+    var el = new EventSource(url);
+  } catch (e) {
+    console.red(e.message);
+  } finally {
+    //
+  }
 
-	return function(op,me,er) {
-		el.onopen = op;
-		el.onmessage = me;
-		el.onerror = er;
-	}
+  return function(op, me, er) {
+    el.onopen = op;
+    el.onmessage = me;
+    el.onerror = er;
+  }
 }
 
-////////// thread /////////
+////////// thread ///////
 function getWork(fileName, onmessage, message) {
-	var w = new Worker(fileName);
-	w.onmessage = function(data) {
-		return onmessage(data.data);
-	}
-	w.postMessage(message);
+  var w = new Worker(fileName);
+  w.onmessage = function(data) {
+    return onmessage(data.data);
+  }
+  w.postMessage(message);
 }
 
-//////////// getElementSize ////////////////
+//////////// getElementSize //////////////
 //////////// get the size of HTMLElement
 def_obj('size', function() {
-	var self = this;
-	if (!self.isDOM) {
-		throw Error(`sorry about it's size`);
-	}
-	var ors = Math.floor(self.offsetWidth);
-	var paddingList = getComputedStyle(self).padding.replace(/px/g,'').split(' ');
-	if (paddingList.length === 1) {
-			ors -= Number(paddingList[0]);
-	} else {
-		for(var i = 0; i < paddingList.length; i++) {
-				if (i % 2 === 0) {
-						continue;
-				}
-				ors -= Number(paddingList[i]);
-		}
-	}
+  var self = this;
+  if (!self.isDOM) {
+    throw Error(`sorry about it's size`);
+  }
+  var ors = Math.floor(self.offsetWidth);
+  var paddingList = getComputedStyle(self).padding.replace(/px/g, '').split(' ');
+  if (paddingList.length === 1) {
+    ors -= Number(paddingList[0]);
+  } else {
+    for (var i = 0; i < paddingList.length; i++) {
+      if (i % 2 === 0) {
+        continue;
+      }
+      ors -= Number(paddingList[i]);
+    }
+  }
 
-	return ors;
+  return ors;
 });
 
-///////////////// getChildByClass //////////////////////
+///////////////// getChildByClass ////////////////////
 ///////////////// parent: HTMLElement
 function getChildElementsByClass(parent, className) {
-		var res = [];
-		var children = parent.getElementsByTagName("*");
-		for(var i = 0; i < children.length; i++) {
-			if (children[i].className = className) {
-				res.push(children[i]);
-			}
-		}
+  var res = [];
+  var children = parent.getElementsByTagName("*");
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].className = className) {
+      res.push(children[i]);
+    }
+  }
 
-		return res;
+  return res;
 }
 
-////////////// get avgSize of child Element //////////////
+////////////// get avgSize of child Element ////////////
 function getAvgSize(parent, num) {
-	return Math.floor(Number(parent.size() /  num)) + 'px';
+  return Math.floor(Number(parent.size() / num)) + 'px';
 }
