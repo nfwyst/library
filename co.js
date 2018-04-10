@@ -8,7 +8,7 @@
 
 var util = {};
 
-//////////////////////////////// global /////////////////////////////////
+//////////////////////////////// global ///////////////////////////////
 var def_arr = function(k, v) {
   Object.defineProperty(Array.prototype, k, {
     configurable: true,
@@ -77,7 +77,7 @@ function validate(arg) {
     throw new Error('tyep error: validate');
   }
 }
-///////////////////////////////////// core ////////////////////////////
+///////////////////////////////////// core //////////////////////////
 //////////// base instructure
 // useage: console.red('number: ', 1234); for modern web browser
 def_log('red', function() {
@@ -300,7 +300,7 @@ def_obj('replaceAll', function(src, dest) {
     return self;
   }
 });
-//////////////////////////////////// util //////////////////////
+//////////////////////////////////// util ////////////////////
 // call_one time
 util.call_one = function(func, item, id, obj) {
   return function() {
@@ -317,7 +317,7 @@ util.min = function(m, n) {
     ? m
     : n;
 }
-/////////////////////////////////// only for array //////////////
+/////////////////////////////////// only for array ////////////
 // get a random item from array
 def_arr('getOne', function() {
   var self = this;
@@ -433,7 +433,7 @@ def_obj('keys_all', function() {
 
   return res;
 });
-///////////////////////////////// event ///////////////////////////
+///////////////////////////////// event /////////////////////////
 // Limit the frequency of events happen
 util.debounce = function(context, func, wait, immediate) {
   var timeout;
@@ -487,14 +487,14 @@ util.once = function(func, context/* other arguments */) {
   })(func, args);
 }
 
-/////////////////////////////// CSS ///////////////////////////////
+/////////////////////////////// CSS /////////////////////////////
 // margin-top ==> marginTop
 util.toCamel = function(str) {
   return str.replace(/-(\w)/g, function(str, item) {
     return item.toUpperCase()
   });
 };
-/////////////////////////////// Time //////////////////////////////
+/////////////////////////////// Time ////////////////////////////
 // translate Date to standard time object
 util.timeTranslate = function(ti) {
   var t = new Date(ti),
@@ -670,7 +670,7 @@ def_obj('includes', function(arg) {
 
   return has;
 });
-/////////////////////////////////// Only For Array /////////////////////////////
+/////////////////////////////////// Only For Array ///////////////////////////
 // if size is 2, src = [1,2,3,4,5], will be [[1,2],[3,4],5]
 def_arr('to_group', function(size) {
   var self = this,
@@ -794,7 +794,7 @@ def_obj('groupBy', function(cb) {
   return res;
 });
 
-////////////////////////// DOM Element ////////////////////
+////////////////////////// DOM Element //////////////////
 // 判断一个对象是否是 DOM 元素
 def_obj('isDOM', function() {
   var self = this;
@@ -861,7 +861,7 @@ def_obj('response', function(w) {
   }
 });
 
-///////// map object //////
+///////// map object ////
 var helper = {};
 function set(obj, key, value) {
   if (!helper[obj]) {
@@ -874,7 +874,7 @@ function get(obj, key) {
   return helper[obj] && helper[obj][key];
 }
 
-////////////////// extend the function //////////////////
+////////////////// extend the function ////////////////
 ////////////////// fn.before(before_callback).after(after_callback)(callback, argumentListOf_fn)
 ////////////////// and the callback should be callback(before_callback_result, after_callback_result)
 /////////// the origin function return value is data.data
@@ -905,7 +905,7 @@ def_fun('after', function(callback) {
   }
 });
 
-///// curry the function //////////
+///// curry the function ////////
 ///// like fn(a,b,c) should be fn(a)(b)(c);
 ///// like fn(a,b,c) could be fn(a), fn(b), fn(c)
 //// like fn(a,b,c) could be var i = fn(a)(b), i(c)
@@ -930,7 +930,7 @@ def_fun('curry', function(argNum, args) {
 
 });
 
-///////// obj for server ///////////
+///////// obj for server /////////
 /////// event('/path/to/server')(cb1,cb2,cb3)
 function event(url) {
   try {
@@ -948,7 +948,7 @@ function event(url) {
   }
 }
 
-////////// thread ///////
+////////// thread /////
 function getWork(fileName, onmessage, message) {
   var w = new Worker(fileName);
   w.onmessage = function(data) {
@@ -957,7 +957,7 @@ function getWork(fileName, onmessage, message) {
   w.postMessage(message);
 }
 
-//////////// getElementSize //////////////
+//////////// getElementSize ////////////
 //////////// get the size of HTMLElement
 def_obj('size', function() {
   var self = this;
@@ -980,7 +980,7 @@ def_obj('size', function() {
   return ors;
 });
 
-///////////////// getChildByClass ////////////////////
+///////////////// getChildByClass //////////////////
 ///////////////// parent: HTMLElement
 function getChildElementsByClass(parent, className) {
   var res = [];
@@ -994,7 +994,159 @@ function getChildElementsByClass(parent, className) {
   return res;
 }
 
-////////////// get avgSize of child Element ////////////
+////////////// get avgSize of child Element //////////
 function getAvgSize(parent, num) {
   return Math.floor(Number(parent.size() / num)) + 'px';
+}
+
+//////////// get element name with id and class /////////////////////////
+////// <div class="question" id="question"></div> => div#question.question
+def_obj('names', function() {
+  var self = this;
+  if (!self.isDOM) {
+    throw Error('only HTMLElement');
+  }
+  var res = self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase;
+  var id = self.getAttribute('id');
+  var classList = self.classList;
+  if (id) {
+    res += '#' + id;
+  }
+  if (classList.length > 0) {
+    res += '.' + classList.value.replace(' ', '.');
+  }
+  return res;
+});
+
+///////////// just element name <div class="question" id="question"></div> => div
+def_obj('pureName', function() {
+  var self = this;
+  if (!self.isDOM) {
+    throw Error('only HTMLElement');
+  }
+  return self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase;
+});
+
+///////////// get tree view of structure element like div ///////////////
+def_obj('toTree', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('only HTMLElement can parse tree');
+  }
+
+  var blackList = ['noscript'];
+  var result = {
+    name: self.names(),
+    children: []
+  };
+
+  var childCollection = self.children;
+  var childCount = self.childElementCount;
+  var isBlock = false;
+  var inWhiteList = false;
+  var item;
+  for (var i = 0; i < childCount; i++) {
+    item = childCollection.item(i);
+    isBlock = getComputedStyle(item).display === 'block';
+    inWhiteList = !blackList.includes(item.pureName());
+    if (isBlock && inWhiteList) {
+      result.children.push(self.toTree.apply(item));
+    }
+  }
+
+  // (function parse(node) {
+  //   console.log(`${node.name}\n`);
+  //   if (node.children.length == 0) {
+  //     return;
+  //   }
+  //   for(var i = 0; i < node.children.length; i++) {
+  //     parse(node.children[i]);
+  //   }
+  // }(result));
+
+  return result;
+});
+
+/////////// query an element by css selector or by parent scope
+function query(child, parent) {
+  if (typeof child !== 'string') {
+    throw Error('argument must be css selector');
+  }
+  if (parent && !parent.isDOM()) {
+    throw Error('parent must be HTMLElement');
+  }
+  if (parent) {
+    return parent.querySelector(child);
+  } else {
+    return document.querySelector(child);
+  }
+}
+//////////////////////// set all attribute for current object ///////////
+//////////////////////// config: {key: value}
+def_obj('setAttributes', function(config) {
+  var self = this;
+  if (!config || typeof config !== 'object') {
+    return self;
+  } else {
+    var keys = Object.keys(config) || config.keys();
+    keys.forEach(function(item, index) {
+      var value = config[item];
+      self.setAttribute(item, value);
+    });
+  }
+  return self;
+});
+
+////////////////////// create element by template string, that's easy to create an Element ////////////
+function createElementHTML(content) {
+  if (typeof content !== 'string') {
+    throw Error('missing: string');
+  }
+  var div = document.createElement('div');
+  var el;
+  div.insertAdjacentHTML('beforeend', content);
+  el = div.firstChild;
+  div.remove();
+  return el;
+}
+
+//////////////////////// canvas /////////////////////////////
+
+/////////////////// draw triangle ///////////////
+/////////////////// fill or stroke
+///////////////////  argument only can be object : {x: integer, y: integer}
+if (CanvasRenderingContext2D) {
+  CanvasRenderingContext2D.prototype.triangle = function(start, p1, p2) {
+    var self = this;
+    try {
+      // self.moveTo(...start);
+      self.moveTo(start.x, start.y);
+      self.lineTo(p1.x, p1.y);
+      self.lineTo(p2.x, p2.y);
+      self.lineTo(start.x, start.y);
+    } catch (e) {
+      throw Error('arguments must be coordinate number')
+    }
+  }
+  CanvasRenderingContext2D.prototype.strokeTriangle = function(start, p1, p2, style) {
+    var self = this;
+    self.triangle(start, p1, p2);
+    self.strokeStyle = style;
+    self.stroke();
+    return self;
+  }
+  CanvasRenderingContext2D.prototype.fillTriangle = function(start, p1, p2, style) {
+    var self = this;
+    self.triangle(start, p1, p2);
+    self.fillStyle = style;
+    self.fill();
+    return self;
+  }
+  /////////////// clear canvas and it's 2d context
+  CanvasRenderingContext2D.prototype.clear = function() {
+    var self = this;
+    var width = self.width;
+    var height = self.height;
+    self.clearRect(0,0, width, height);
+  }
 }
