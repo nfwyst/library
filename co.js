@@ -1,14 +1,14 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2017/6/2 8:20
+ * update date: 2018/4/11 22:00
  */
 
 'use strict';
 
 var util = {};
 
-//////////////////////////////// global ///////////////////////////////
+//////////////////////////////// global ///////////////////////////
 var def_arr = function(k, v) {
   Object.defineProperty(Array.prototype, k, {
     configurable: true,
@@ -77,7 +77,7 @@ function validate(arg) {
     throw new Error('tyep error: validate');
   }
 }
-///////////////////////////////////// core //////////////////////////
+///////////////////////////////////// core //////////////////////
 //////////// base instructure
 // useage: console.red('number: ', 1234); for modern web browser
 def_log('red', function() {
@@ -300,7 +300,7 @@ def_obj('replaceAll', function(src, dest) {
     return self;
   }
 });
-//////////////////////////////////// util ////////////////////
+//////////////////////////////////// util ////////////////
 // call_one time
 util.call_one = function(func, item, id, obj) {
   return function() {
@@ -317,7 +317,7 @@ util.min = function(m, n) {
     ? m
     : n;
 }
-/////////////////////////////////// only for array ////////////
+/////////////////////////////////// only for array ////////
 // get a random item from array
 def_arr('getOne', function() {
   var self = this;
@@ -433,7 +433,7 @@ def_obj('keys_all', function() {
 
   return res;
 });
-///////////////////////////////// event /////////////////////////
+///////////////////////////////// event /////////////////////
 // Limit the frequency of events happen
 util.debounce = function(context, func, wait, immediate) {
   var timeout;
@@ -487,14 +487,14 @@ util.once = function(func, context/* other arguments */) {
   })(func, args);
 }
 
-/////////////////////////////// CSS /////////////////////////////
+/////////////////////////////// CSS /////////////////////////
 // margin-top ==> marginTop
 util.toCamel = function(str) {
   return str.replace(/-(\w)/g, function(str, item) {
     return item.toUpperCase()
   });
 };
-/////////////////////////////// Time ////////////////////////////
+/////////////////////////////// Time ////////////////////////
 // translate Date to standard time object
 util.timeTranslate = function(ti) {
   var t = new Date(ti),
@@ -670,7 +670,7 @@ def_obj('includes', function(arg) {
 
   return has;
 });
-/////////////////////////////////// Only For Array ///////////////////////////
+/////////////////////////////////// Only For Array ///////////////////////
 // if size is 2, src = [1,2,3,4,5], will be [[1,2],[3,4],5]
 def_arr('to_group', function(size) {
   var self = this,
@@ -794,7 +794,7 @@ def_obj('groupBy', function(cb) {
   return res;
 });
 
-////////////////////////// DOM Element //////////////////
+////////////////////////// DOM Element //////////////
 // 判断一个对象是否是 DOM 元素
 def_obj('isDOM', function() {
   var self = this;
@@ -861,7 +861,7 @@ def_obj('response', function(w) {
   }
 });
 
-///////// map object ////
+///////// map object
 var helper = {};
 function set(obj, key, value) {
   if (!helper[obj]) {
@@ -874,7 +874,7 @@ function get(obj, key) {
   return helper[obj] && helper[obj][key];
 }
 
-////////////////// extend the function ////////////////
+////////////////// extend the function ////////////
 ////////////////// fn.before(before_callback).after(after_callback)(callback, argumentListOf_fn)
 ////////////////// and the callback should be callback(before_callback_result, after_callback_result)
 /////////// the origin function return value is data.data
@@ -905,7 +905,7 @@ def_fun('after', function(callback) {
   }
 });
 
-///// curry the function ////////
+///// curry the function ////
 ///// like fn(a,b,c) should be fn(a)(b)(c);
 ///// like fn(a,b,c) could be fn(a), fn(b), fn(c)
 //// like fn(a,b,c) could be var i = fn(a)(b), i(c)
@@ -930,7 +930,7 @@ def_fun('curry', function(argNum, args) {
 
 });
 
-///////// obj for server /////////
+///////// obj for server /////
 /////// event('/path/to/server')(cb1,cb2,cb3)
 function event(url) {
   try {
@@ -948,7 +948,7 @@ function event(url) {
   }
 }
 
-////////// thread /////
+////////// thread /
 function getWork(fileName, onmessage, message) {
   var w = new Worker(fileName);
   w.onmessage = function(data) {
@@ -957,7 +957,7 @@ function getWork(fileName, onmessage, message) {
   w.postMessage(message);
 }
 
-//////////// getElementSize ////////////
+//////////// getElementSize ////////
 //////////// get the size of HTMLElement
 def_obj('size', function() {
   var self = this;
@@ -980,7 +980,7 @@ def_obj('size', function() {
   return ors;
 });
 
-///////////////// getChildByClass //////////////////
+///////////////// getChildByClass //////////////
 ///////////////// parent: HTMLElement
 function getChildElementsByClass(parent, className) {
   var res = [];
@@ -994,19 +994,19 @@ function getChildElementsByClass(parent, className) {
   return res;
 }
 
-////////////// get avgSize of child Element //////////
+////////////// get avgSize of child Element //////
 function getAvgSize(parent, num) {
   return Math.floor(Number(parent.size() / num)) + 'px';
 }
 
-//////////// get element name with id and class /////////////////////////
+//////////// get element name with id and class /////////////////////
 ////// <div class="question" id="question"></div> => div#question.question
 def_obj('names', function() {
   var self = this;
   if (!self.isDOM) {
     throw Error('only HTMLElement');
   }
-  var res = self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase;
+  var res = self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase();
   var id = self.getAttribute('id');
   var classList = self.classList;
   if (id) {
@@ -1024,10 +1024,10 @@ def_obj('pureName', function() {
   if (!self.isDOM) {
     throw Error('only HTMLElement');
   }
-  return self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase;
+  return self.localName || self.tagName.toLowerCase() || self.nodeName.toLowerCase();
 });
 
-///////////// get tree view of structure element like div ///////////////
+///////////// get tree view of structure element like div ///////////
 def_obj('toTree', function() {
   var self = this;
   if (!self.isDOM()) {
@@ -1081,7 +1081,7 @@ function query(child, parent) {
     return document.querySelector(child);
   }
 }
-//////////////////////// set all attribute for current object ///////////
+//////////////////////// set all attribute for current object ///////
 //////////////////////// config: {key: value}
 def_obj('setAttributes', function(config) {
   var self = this;
@@ -1097,7 +1097,7 @@ def_obj('setAttributes', function(config) {
   return self;
 });
 
-////////////////////// create element by template string, that's easy to create an Element ////////////
+////////////////////// create element by template string, that's easy to create an Element ////////
 function createElementHTML(content) {
   if (typeof content !== 'string') {
     throw Error('missing: string');
@@ -1110,9 +1110,9 @@ function createElementHTML(content) {
   return el;
 }
 
-//////////////////////// canvas /////////////////////////////
+//////////////////////// canvas /////////////////////////
 
-/////////////////// draw triangle ///////////////
+/////////////////// draw triangle ///////////
 /////////////////// fill or stroke
 ///////////////////  argument only can be object : {x: integer, y: integer}
 if (CanvasRenderingContext2D) {
@@ -1147,6 +1147,90 @@ if (CanvasRenderingContext2D) {
     var self = this;
     var width = self.width;
     var height = self.height;
-    self.clearRect(0,0, width, height);
+    self.clearRect(0, 0, width, height);
   }
 }
+
+// change the style of pseudo element
+// eg: selector:  '.logo::before', value: 'content: #'
+// change the ::before ::after pseudo element
+function setPseudoElement(selector, value) {
+  var stylesheet = document.styleSheets[0];
+  if (typeof selector !== 'string' || typeof value !== 'string') {
+    throw Error('type error: string');
+  } else if (stylesheet) {
+    return stylesheet.addRule(selector, value, 0);
+  } else {
+    var style = createElementHTML('<style></style');
+    document.head.insertAdjacentElement('afterbegin', style);
+    var sheet = style.sheet;
+
+    return sheet.addRule(selector, value, 0);
+  }
+}
+
+////////////////////////// validate form-control: input /////////////////////////////
+def_obj('isEmail', function() {
+  var self = this;
+  if (!self.isDOM() && self.pureName() !== 'input') {
+    throw Error('type error: HTMLElement input');
+  }
+  var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+  if (self.isDOM() && self.pureName() === 'input' && self.getAttribute('type') === 'text' || self.getAttribute('type') === 'email') {
+    return regex.test(self.value);
+  }
+  return false;
+});
+
+def_obj('validPassword', function() {
+  var self = this;
+  if (!self.isDOM() && self.pureName() !== 'input') {
+    throw Error('type error: HTMLElement input');
+  }
+  return self.value.length >= 6;
+});
+
+def_obj('validPhone', function() {
+  var self = this;
+  if (!self.isDOM() && self.pureName() !== 'input') {
+    throw Error('type error: HTMLElement input');
+  }
+  return /^\d+$/.test(self.value) && self.value.length >= 6;
+});
+
+def_obj('validate', function() {
+  var self = this;
+  var self.setInvalid = self.setInvalid || function() {};
+  if (!self.isDOM()) {
+    throw Error('type error: string');
+  }
+  if (!self.isEmail() && self.getAttribute('id') === 'email') {
+    self.setInvalid();
+  } else if (!self.validPassword() && self.getAttribute('id') === 'password') {
+    self.setInvalid();
+  } else if (!self.validPhone() && self.getAttribute('id') === 'phone') {
+    self.setInvalid();
+  } else {
+    return true;
+  }
+});
+
+//////////////////////// add wrapper //////////////////////////////////
+///////////// <img id="guide"> ==> <div id="guide-wrapper"><img></div>
+///////////// default by id, or by tag name
+def_obj('addWrapper', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('type error: HTMLElement');
+  }
+  var id = self.getAttribute('id');
+  var name = id
+    ? id
+    : self.pureName();
+
+  var div = createElementHTML('<div id="' + name + '-wrapper"></div>');
+  self.insertAdjacentElement('beforebegin', div);
+
+  div.appendChild(self);
+  return self;
+});
