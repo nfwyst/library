@@ -1341,3 +1341,130 @@ function rgb2(rgb) {
     return rgb;
   }
 }
+
+/////////////////////////////////////// the first letter of word to lowerCase ////////////////////////////
+def_str('toLower', function(word) {
+  if (!word || typeof word !== 'string') {
+    throw Error('need string');
+  }
+  return Array.from(word).map(function(item, index) {
+    return !index ? item.toLowerCase() : item
+  }).join('');
+});
+
+////////////////////////////////////// get document scrollTop / scrollLeft ///////////////////////////////////////
+function scroll(left, top) {
+  if (left) {
+    return document.body.scrollLeft + document.documentElement.scrollLeft;
+  } else if (top) {
+    return document.body.scrollTop + document.documentElement.scrollTop;
+  } else if(left && top)  {
+    return {
+      left: document.body.scrollLeft + document.documentElement.scrollLeft,
+      top: document.body.scrollTop + document.documentElement.scrollTop
+    }
+  } else {
+    throw new Error('must specify left or top: boolean');
+  }
+}
+
+////////////////////////////////// get offset position of element based on parent element /////////////////////////////
+def_obj('parentOffset', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('element must be document element')
+  }
+  return {
+    x: self.offsetLeft,
+    y: self.offsetTop
+  }
+});
+
+//////////////////////////////////// get document position of elelment its an absolute position
+//////////////////////////////////// { x: Number, y: Number }/////////////////////////////////////////
+def_obj('offset', function() {
+  var self = this;
+
+  // we just need scroll position size plus the viewport position size in fact
+  // for chrome and safari
+  if (window.pageXOffset && window.pageYOffset) {
+    var pos = self.position()
+    return {
+      x: pos.x + window.pageXOffset,
+      y: pos.y + window.pageYOffset
+    }
+  }
+
+  var offsetX = self.offsetLeft;
+  var offsetY = self.offsetTop;
+  if (!self.isDOM()) {
+    throw new Error('element must be document Element');
+  }
+  (function() {
+    var _self = this;
+    if (_self.offsetParent) {
+      // var res = arguments.callee.call(_self.offsetParent);
+      // offsetX += res.x;
+      // offsetY += res.y;
+      var res = _self.offsetParent.parentOffset();
+      offsetX += res.x;
+      offsetY += res.y;
+      arguments.callee.call(_self.offsetParent);
+    }
+
+    return _self.parentOffset();
+    // return {
+    //   x: _self.offsetLeft,
+    //   y: _self.offsetTop
+    // }
+  }).call(this);
+
+  return {
+    x: offsetX,
+    y: offsetY
+  }
+});
+
+///////////////////////////////////// get viewport position of element, not jquery's relative position ///////////////////////
+def_obj('position', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('element must be document Element');
+  }
+  var rect = self.getBoundingClientRect();
+  return {
+    x: rect.x,
+    y: rect.y
+  }
+});
+
+///////////////////////////////////// reduce : get information from array, and specify the context position
+///////////////////////////////////// array.reduce(callback, sta, startPoint, endPoint);
+///////////////////////////////////// this can use to compose function like
+///////////////////////////////////// filter find map to reduce the amount of the code
+def_arr('reduce', function(callback, b, startId, endId) {
+  var self = this;
+  if(type(self) !== 'array') {
+    throw Error('reduce can not apply to object that not is array');
+  }
+  if (type(callback) !== 'function') {
+    throw Error('reduce need callback to get result');
+  }
+  if (!b && b !== 0) {
+    throw Error('sorry, start point missing');
+  }
+
+  if (startId && endId && type(startId) === 'number' && type(endId) === 'number' && startId <= endId) {
+    self.forEach(function(item, k, arr) {
+      if (k >= startId && k <= endId) {
+        b = callback(b, item);
+      }
+    });
+  } else {
+    self.forEach(function(item, k, arr) {
+      b = callback(b, item);
+    });
+  }
+
+  return b;
+});
