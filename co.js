@@ -152,7 +152,7 @@ def_obj('each', function(cb) {
   for (var item in self) {
     if (self.hasOwnProperty(item)) {
       if (t === 'string') {
-        item = Number(item);
+        item = self.substr(item, 1);
       }
       cb.call(null, self[item], item, self, function break_func(msg) {
         message = msg;
@@ -986,7 +986,7 @@ function getChildElementsByClass(parent, className) {
   var res = [];
   var children = parent.getElementsByTagName("*");
   for (var i = 0; i < children.length; i++) {
-    if (children[i].className = className) {
+    if (children[i].className == className) {
       res.push(children[i]);
     }
   }
@@ -1441,7 +1441,7 @@ def_obj('position', function() {
 ///////////////////////////////////// reduce : get information from array, and specify the context position
 ///////////////////////////////////// array.reduce(callback, sta, startPoint, endPoint);
 ///////////////////////////////////// this can use to compose function like
-///////////////////////////////////// filter find map to reduce the amount of the code
+///////////////////////////////////// filter find map curry to reduce the amount of the code
 def_arr('reduce', function(callback, b, startId, endId) {
   var self = this;
   if(type(self) !== 'array') {
@@ -1468,3 +1468,111 @@ def_arr('reduce', function(callback, b, startId, endId) {
 
   return b;
 });
+
+/////////////////////////////////////////////////// get all children which includes grandchildren ///////////////////
+def_obj('allChildren', function () {
+  var self = this;
+  if(!self.isDOM()) {
+    throw Error('the object must be dom element'); 
+  }
+  return self.getElementsByTagName('*');
+});
+/////////////////////////////////////////////////// bind event /////////////////////////////////////////////////
+///////////////////////         事件代理
+def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
+  var self = this;
+  self.eventList = self.eventList ? self.eventList : {
+    length: 0
+  };
+  if(!self.isDOM()) {
+    throw Error('event need a dom target')
+  }
+  if(!name || typeof name !== 'string' || typeof callback !== 'function') {
+    return false;
+  }
+  if(!delegateTarget || delegateTarget === null) {
+    self.addEventListener(/*`${name}`*/ name, callback); 
+    self.eventList[name] ? self.eventList[name].push({
+      fn: callback,
+      name: callback.fnName()
+    }) : self.eventList[name] = [];
+    self.eventList.length++;
+  } else if(typeof delegateTarget === 'string'){
+    self.addEventListener(name, function(e) {
+      var target = e.target;
+      var childrens = self.allChildren();
+      for(child of childrens) {
+        var childNames = child.names(); 
+        if(childNames.includes(delegateTarget) && target === child) {
+          callback(child); 
+        }
+      }
+    });
+    self.eventList[name] ? self.eventList[name].push({
+      fn: callback,
+      name: callback.fnName()
+    }) : self.eventList[name] = [];
+    self.eventList.length++;
+  } else {
+    return false;
+  }
+})
+
+////////////////////////////////////////////////// get function name ////////////////////////////////////////
+def_obj('fnName', function() {
+  var self = this;
+  if(typeof self !== 'function') {
+    throw Error('just function has fnName: function name'); 
+  }
+  if (self.name) {
+    return self.name 
+  } else {
+    return self.toString().match(/\w+ (\w+)/)[1]; 
+  }
+});
+
+////////////////////////////////////////////////// off event listener /////////////////////////////////////////
+// if done thats ok , or return false, if no fnName, all event list would be deleted
+def_obj('off', function(type, fnName) {
+  var self = this;
+  if(self.isDOM() && self.eventList.length > 0 && typeof type === 'string') {
+    var list = self.eventList[type];
+    list.each(function(event, key) {
+      if(fnName && typeof fnName === 'string') {
+        if(fnName === event.name)  {
+          self.removeEventListener(type, event.fn); 
+          delete list[key];
+        }
+      } else {
+        self.removeEventListener(type, event.fn); 
+        delete list[key];
+      }
+    });
+    return true; 
+  } else {
+    return false; 
+  }
+});
+////////////////////////////////////////////////// get the relative position according to mouse ////////////////
+// callback return a boolean to determine off event or continue watch relative position
+def_obj('cursorPosition', function(callback) {
+  var self = this;
+  // var el = self.query(selector);
+  if(!self.isDOM())  {
+    throw Error('sorry, this cant be bind to position'); 
+  } else {
+    self.on('mousemove', function(e) {
+      var px = e.pageX;
+      var py = e.pageY;
+      var position = {
+        x: px - el.offsetLeft,
+        y: py - el.offsetTop
+      }
+      var off = callback(position);
+      if (off) {
+        self.off('mousemove');  
+      }
+    }); 
+  }
+});
+
