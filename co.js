@@ -1587,6 +1587,9 @@ def_obj('hasChild', function(el) {
   if (el) {
     if (typeof el === 'string') {
       el = query(el); 
+      if (el.length > 1) {
+        el = el[0]; 
+      }
     }
     if (!el.isDOM()) {
       return false; 
