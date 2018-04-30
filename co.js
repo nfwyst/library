@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/4/22 18:24
+ * update date: 2018/4/30 8:12
  */
 
 'use strict';
@@ -1576,3 +1576,99 @@ def_obj('cursorPosition', function(callback) {
   }
 });
 
+//////////////////////////////////// check a child element ///////////////////////
+// eg: document.body.hasChild('#footer') => boolean;
+def_obj('hasChild', function(el) {
+  var self = this;
+  var childs = null;
+  if(!self.isDOM()) {
+    throw Error('the object must be an elment');
+  }
+  if (el) {
+    if (typeof el === 'string') {
+      el = query(el); 
+    }
+    if (!el.isDOM()) {
+      return false; 
+    }
+    if (self.contains) {
+      return self.contains(el); 
+    } else {
+      childs = self.allChildren();
+      for(item of childs) {
+        if (item === el) {
+          return true; 
+        }
+      }
+    }
+  } 
+  return false;
+}
+
+////////////////////////////////// init requestAnimationFrame ////////////////////
+function getRequestAnimationFrame() {
+  if (window.requestAnimationFrame) {
+    return; 
+  } else {
+    var prefix = 
+      ['webkit', 'moz', 'ms', 'o'].map(function(prefix, index) {
+        if (window[`${prefix}RequestAnimationFrame`]) {
+          return prefix; 
+        } else {
+          return '';
+        }
+      }).join('');
+    window.requestAnimationFrame = window[`${prefix}RequestAnimationFrame`];
+  }
+}
+/////////////////////////////////// request AnimationFrame ///////////////////////
+function clearTimeouts(ids) {
+  ids.map(function(id, index)) {
+    window.clearTimeout(id);
+  }
+  return true;
+}
+
+/////////////////////////////////// fade animation ///////////////////////////////
+def_obj('fade', function(name) {
+  var ids = [];
+  var self = this;
+  getRequestAnimationFrame();
+  if(!self.isDOM()) {
+    throw Error('the fade target is not an element');
+  } 
+  if (typeof name === 'string' && name === 'in') {
+    self.style.opacity = 0;
+    var curtime = +new Date(); 
+    (function() {
+      self.style.opacity += (new Date() - curtime) / 400; 
+      curtime = +new Date();
+
+      if (self.style.opacity < 1) {
+        if (window.requestAnimationFrame) {
+          requestAnimationFrame(arguments.callee); 
+        } else {
+          ids.push(setTimeout(arguments.callee, 16));
+        }
+      } else {
+        clearTimeouts(ids);
+      }
+    }()); 
+  } else if (typeof name === 'string' && name === 'out') {
+    self.style.opacity = 1;
+    var curtime = +new Date();
+    (function() {
+      self.style.opacity -= (new Date() - curtime) / 400; 
+      curtime = +new Date();
+      if (self.style.opacity > 0) {
+        if (window.requestAnimationFrame) {
+          requestAnimationFrame(arguments.callee); 
+        } else {
+          ids.push(setTimeout(arguments.callee, 16));
+        }
+      } else {
+        clearTimeouts(ids);
+      }
+    }());
+  }
+});
