@@ -1,14 +1,14 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/4/30 8:12
+ * update date: 2018/5/2 10:40
  */
 
 'use strict';
 
 var util = {};
 
-//////////////////////////////// global ///////////
+//////////////////////////////// global ///////////////////
 var def_arr = function(k, v) {
   Object.defineProperty(Array.prototype, k, {
     configurable: true,
@@ -1473,7 +1473,7 @@ def_arr('reduce', function(callback, b, startId, endId) {
 def_obj('allChildren', function () {
   var self = this;
   if(!self.isDOM()) {
-    throw Error('the object must be dom element'); 
+    throw Error('the object must be dom element');
   }
   return self.getElementsByTagName('*');
 });
@@ -1491,7 +1491,7 @@ def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
     return false;
   }
   if(!delegateTarget || delegateTarget === null) {
-    self.addEventListener(/*`${name}`*/ name, callback); 
+    self.addEventListener(/*`${name}`*/ name, callback);
     self.eventList[name] ? self.eventList[name].push({
       fn: callback,
       name: callback.fnName()
@@ -1502,9 +1502,9 @@ def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
       var target = e.target;
       var childrens = self.allChildren();
       for(child of childrens) {
-        var childNames = child.names(); 
+        var childNames = child.names();
         if(childNames.includes(delegateTarget) && target === child) {
-          callback(child); 
+          callback(child);
         }
       }
     });
@@ -1522,12 +1522,12 @@ def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
 def_obj('fnName', function() {
   var self = this;
   if(typeof self !== 'function') {
-    throw Error('just function has fnName: function name'); 
+    throw Error('just function has fnName: function name');
   }
   if (self.name) {
-    return self.name 
+    return self.name
   } else {
-    return self.toString().match(/\w+ (\w+)/)[1]; 
+    return self.toString().match(/\w+ (\w+)/)[1];
   }
 });
 
@@ -1540,17 +1540,17 @@ def_obj('off', function(type, fnName) {
     list.each(function(event, key) {
       if(fnName && typeof fnName === 'string') {
         if(fnName === event.name)  {
-          self.removeEventListener(type, event.fn); 
+          self.removeEventListener(type, event.fn);
           delete list[key];
         }
       } else {
-        self.removeEventListener(type, event.fn); 
+        self.removeEventListener(type, event.fn);
         delete list[key];
       }
     });
-    return true; 
+    return true;
   } else {
-    return false; 
+    return false;
   }
 });
 ////////////////////////////////////////////////// get the relative position according to mouse ////////////////
@@ -1559,7 +1559,7 @@ def_obj('cursorPosition', function(callback) {
   var self = this;
   // var el = self.query(selector);
   if(!self.isDOM())  {
-    throw Error('sorry, this cant be bind to position'); 
+    throw Error('sorry, this cant be bind to position');
   } else {
     self.on('mousemove', function(e) {
       var px = e.pageX;
@@ -1570,9 +1570,9 @@ def_obj('cursorPosition', function(callback) {
       }
       var off = callback(position);
       if (off) {
-        self.off('mousemove');  
+        self.off('mousemove');
       }
-    }); 
+    });
   }
 });
 
@@ -1586,37 +1586,37 @@ def_obj('hasChild', function(el) {
   }
   if (el) {
     if (typeof el === 'string') {
-      el = query(el); 
+      el = query(el);
       if (el.length > 1) {
-        el = el[0]; 
+        el = el[0];
       }
     }
     if (!el.isDOM()) {
-      return false; 
+      return false;
     }
     if (self.contains) {
-      return self.contains(el); 
+      return self.contains(el);
     } else {
       childs = self.allChildren();
       for(item of childs) {
         if (item === el) {
-          return true; 
+          return true;
         }
       }
     }
-  } 
+  }
   return false;
 }
 
 ////////////////////////////////// init requestAnimationFrame ////////////////////
 function getRequestAnimationFrame() {
   if (window.requestAnimationFrame) {
-    return; 
+    return;
   } else {
-    var prefix = 
+    var prefix =
       ['webkit', 'moz', 'ms', 'o'].map(function(prefix, index) {
         if (window[`${prefix}RequestAnimationFrame`]) {
-          return prefix; 
+          return prefix;
         } else {
           return '';
         }
@@ -1639,33 +1639,33 @@ def_obj('fade', function(name) {
   getRequestAnimationFrame();
   if(!self.isDOM()) {
     throw Error('the fade target is not an element');
-  } 
+  }
   if (typeof name === 'string' && name === 'in') {
     self.style.opacity = 0;
-    var curtime = +new Date(); 
+    var curtime = +new Date();
     (function() {
-      self.style.opacity += (new Date() - curtime) / 400; 
+      self.style.opacity += (new Date() - curtime) / 400;
       curtime = +new Date();
 
       if (self.style.opacity < 1) {
         if (window.requestAnimationFrame) {
-          requestAnimationFrame(arguments.callee); 
+          requestAnimationFrame(arguments.callee);
         } else {
           ids.push(setTimeout(arguments.callee, 16));
         }
       } else {
         clearTimeouts(ids);
       }
-    }()); 
+    }());
   } else if (typeof name === 'string' && name === 'out') {
     self.style.opacity = 1;
     var curtime = +new Date();
     (function() {
-      self.style.opacity -= (new Date() - curtime) / 400; 
+      self.style.opacity -= (new Date() - curtime) / 400;
       curtime = +new Date();
       if (self.style.opacity > 0) {
         if (window.requestAnimationFrame) {
-          requestAnimationFrame(arguments.callee); 
+          requestAnimationFrame(arguments.callee);
         } else {
           ids.push(setTimeout(arguments.callee, 16));
         }
@@ -1675,3 +1675,134 @@ def_obj('fade', function(name) {
     }());
   }
 });
+
+//////////////////////////////////// prepend new element to current object //////////////////
+///// insert inside its not native prepend(that will prepend a node)
+def_obj('prependElement', function(el) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be doc element');
+  }
+  if (typeof el === 'string') {
+    el = crateElementHTML(el);
+  }
+  self.insertBefore(el, self.firstChild);
+});
+
+////////////////////////////////////////////// trigger event /////////////////////////////////
+def_obj('trigger', function(type, canBubble, canCancel){
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be doc element');
+  }
+  if (typeof type !== 'string') {
+    throw Error('the event name must be string');
+  }
+  var e = document.createEvent('HTMLEvents');
+  e.initEvent(type, canBubble? canBubble : true, canCancel? canCancel: false);
+  self.dispatchEvent(e);
+});
+
+// shuffle array
+def_obj('shuffle', function () {
+  var self = this;
+  if (self.type() !== 'array') {
+    throw Error('the object must be a array');
+  }
+  return self.sort(function () {
+    // return -1 1 0
+    return 0.5 - Math.random();
+  });
+});
+
+////////////////////////////////////// some structure //////////////////////////////////////
+util.symbolize = function(arr) {
+  var type = arr.type();
+  var a = null;
+  if (type !== 'array' && type === 'number') {
+    a = [];
+    for(var i = 0; i < arr; i++) {
+      a.push(i);
+    }
+    arr = a;
+  }
+  var id = 0;
+  return {
+    [Symbol.iterator]: function () {
+      return {
+        next: function () {
+          if (id < arr.length) {
+            return {
+              value: arr[id++],
+              done: false
+            }
+          } else {
+            return {
+              done: true
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////// se structure //////////////////////
+/////////////////////////////////////////// union the data
+// just for simple value now
+util.se = function() {
+  let datas = {};
+  this.size = 0;
+
+  // op
+  this.has = function (val) {
+    if (datas.hasOwnProperty(val)) {
+      return datas[val];
+    } else {
+      return false;
+    }
+  }
+  this.add = function (val) {
+    if (!this.has(val)) {
+      datas[val] = val;
+      return this.size++;
+    }
+    return false;
+  }
+  this.delete = function (val) {
+    if (this.has(val)) {
+      delete datas[val];
+      return true;
+    } else {
+      return false;
+    }
+  }
+  this.clear = function () {
+    datas = {};
+    this.size = 0;
+  }
+
+
+  this.keys = function () {
+    return Object.keys(this);
+  }
+  this.values = function () {
+    return Object.values(this);
+  }
+  this.size = function () {
+    return this.size;
+  }
+  this.forEach = function (callback, br) {
+    var sy = ul.symbolize(this.size);
+    var keys = this.keys();
+    var values = this.values();
+    for(id in sy) {
+      var res = callback(null, keys[id], values[id], this);
+      if (res) {
+        break;
+      } else {
+        continue;
+      }
+    }
+  }
+}
