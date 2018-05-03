@@ -1716,6 +1716,7 @@ def_obj('shuffle', function () {
 });
 
 ////////////////////////////////////// some structure //////////////////////////////////////
+////// iterator
 util.symbolize = function(arr) {
   var type = arr.type();
   var a = null;
@@ -1750,10 +1751,14 @@ util.symbolize = function(arr) {
 /////////////////////////////////////////// se structure //////////////////////
 /////////////////////////////////////////// union the data
 // just for simple value now
-util.se = function() {
+util.se = function(in = []) {
   let datas = {};
   this.size = 0;
-
+  if (in.length && in.length > 0) {
+    in.map(function(item, id) {
+      return this.add(item);
+    });
+  }
   // op
   this.has = function (val) {
     if (datas.hasOwnProperty(val)) {
@@ -1781,22 +1786,32 @@ util.se = function() {
     datas = {};
     this.size = 0;
   }
+  this.entries = function() {
+    var sy = util.symbolize(this.size);
+    var keys = this.keys();
+    var values = this.values();
 
-
+    sy.map(function(item, id) {
+      return {
+        key: keys[item],
+        value: values[item]
+      }
+    });
+  }
   this.keys = function () {
-    return Object.keys(this);
+    return Object.keys ? Object.keys(this) : this.keys();
   }
   this.values = function () {
-    return Object.values(this);
+    return Object.keys ? Object.values(this).shuffle() : this.keys().shuffle();
   }
   this.size = function () {
     return this.size;
   }
   this.forEach = function (callback, br) {
-    var sy = ul.symbolize(this.size);
+    var sy = util.symbolize(this.size);
     var keys = this.keys();
     var values = this.values();
-    for(id in sy) {
+    for(id of sy) {
       var res = callback(null, keys[id], values[id], this);
       if (res) {
         break;
@@ -1804,5 +1819,31 @@ util.se = function() {
         continue;
       }
     }
+  }
+  // for union and intersection
+  this.union = function(b) {
+    if (!b instanceof se) {
+      throw Error('argument must be a union object');
+    }
+    var res = new se();
+    var values = this.values();
+    values.map(function(item, id) {
+      res.add(item);
+    });
+    b.values().map(function(item, id) {
+      if (!this.has(item)) {
+        res.add(item);
+      }
+    });
+
+    return res;
+  }
+  this.intersection = function(b) {
+    if (!b instanceof se) {
+      throw Error('argument must be a union object');
+    }
+    return b.values().filter(function(item, id) {
+      return this.has(item);
+    });
   }
 }
