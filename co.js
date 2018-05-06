@@ -1879,7 +1879,7 @@ def_obj('deepExtend', function (o) {
   return true;
 });
 // basic method for change prototype
-def_obj('prototype',function (fn) {
+def_obj('proto',function (fn) {
   var self = this;
   var type = self.type();
   // get prototype
@@ -1921,7 +1921,7 @@ def_obj('prototype',function (fn) {
 // device namespace
 var device = util.device = {};
 // init common method
-device.prototype(function htmlSize() {
+device.proto(function htmlSize() {
   return getComputedStyle(query('html').item(0)).fontSize;
 });
 device.whatchRem = function (designWidth) {
