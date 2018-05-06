@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/6 8:56
+ * update date: 2018/5/6 9:10
  */
 
 'use strict';
@@ -1565,8 +1565,8 @@ def_obj('cursorPosition', function(callback) {
       var px = e.pageX;
       var py = e.pageY;
       var position = {
-        x: px - el.offsetLeft,
-        y: py - el.offsetTop
+        x: px - self.position().x,
+        y: py - self.position().y
       }
       var off = callback(position);
       if (off) {
