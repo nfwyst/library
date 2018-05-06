@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/3 20:04
+ * update date: 2018/5/6 8:56
  */
 
 'use strict';
@@ -1076,9 +1076,9 @@ function query(child, parent) {
     throw Error('parent must be HTMLElement');
   }
   if (parent) {
-    return parent.querySelector(child);
+    return parent.querySelectorAll(child);
   } else {
-    return document.querySelector(child);
+    return document.querySelectorAll(child);
   }
 }
 //////////////////////// set all attribute for current object /
@@ -1846,4 +1846,58 @@ util.se = function(in = []) {
       return this.has(item);
     });
   }
+}
+
+// change the fontSize for root element
+// basic font size is 100px
+util.whatchRem = function (designWidth) {
+  var el = query('html').item(0);
+  var event = null;
+  var fn = function () {
+    var width = clientWidth();
+    if (width) {
+      el.style.fontSize = 100 / designWidth * width + 'px';
+    } else {
+      return false;
+    }
+  }
+  if ('onorientationchange' in window) {
+    event = 'onorientationchange';
+  } else {
+    event 'resize'
+  }
+
+  window.on(event, fn, false);
+  window.on('DOMContentLoaded', fn, false);
+}
+
+// dynamic change the ratio for viewport
+util.whatchRatio = function (designWidth) {
+  var el = query('meta[name="viewport"]').item(0);
+  var ratio = designWidth / clientWidth();
+  var event = null;
+  var fn = function () {
+    var viewport = el.getAttribute('content')
+      .split(',')
+      .map(function (item, index) {
+        if (/minimum-\w+=/.test(item)) {
+          return 'minimum-scale=' + ratio;
+        } else if (/maximum-\w+=/.test(item)) {
+          return 'maximum-scale=' + ratio;
+        } else if(/initial-\w+=/.test(item)) {
+          return 'initial-scale=' + ratio;
+        }
+      }).join(',');
+
+    el.setAttribute('content', viewport);
+  }
+
+  if ('onorientationchange' in window) {
+    event = 'onorientationchange';
+  } else {
+    event 'resize'
+  }
+
+  window.on(event, fn, false);
+  window.on('DOMContentLoaded', fn, false);
 }
