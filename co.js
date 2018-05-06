@@ -1799,7 +1799,7 @@ util.se = function(in = []) {
     });
   }
   this.keys = function () {
-    return Object.keys ? Object.keys(this) : this.keys();
+    return Object.keys ? Object.keys(this).shuffle() : this.keys().shuffle();
   }
   this.values = function () {
     return Object.keys ? Object.values(this).shuffle() : this.keys().shuffle();
