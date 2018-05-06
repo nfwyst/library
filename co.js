@@ -1847,10 +1847,84 @@ util.se = function(in = []) {
     });
   }
 }
+///////////////////////////////////////////// for mobile device adapter /////////////////////////////
+// simple extend
+def_obj('extend', function (o) {
+  var self = this;
+  if (!o.type() || o.type() !== 'object') {
+    return false;
+  }
+  for (var key in o) {
+    if (o.hasOwnProperty(key)) {
+      self[key] = o[key];
+    }
+  }
+  return true;
+});
+// deep extend
+def_obj('deepExtend', function (o) {
+  var self = this;
+  if (!o.type() || o.type() !== 'object') {
+    return false;
+  }
+  for (var key in o) {
+    if (o.hasOwnProperty(key)) {
+      if (typeof o[key] === 'object') {
+        self.deepExtend(o[key]);
+      } else {
+        self[key] = o[key];
+      }
+    }
+  }
+  return true;
+});
+// basic method for change prototype
+def_obj('prototype',function (fn) {
+  var self = this;
+  var type = self.type();
+  // get prototype
+  if (!fn) {
+    if (type === 'function') {
+      return self.prototype;
+    } else {
+      return self.constructor.prototype;
+    } // set prototype for function
+  } else if(fn.type && fn.type() === 'function') {
+    var name = fn.fnName();
+    if (type === 'function') {
+      self.prototype[name] = fn;
+    } else if (type === 'object') {
+      var _proto = Object.getPrototypeOf(self);
+      if (!_proto) {
+        _proto = {};
+      }
+      _proto[name] = fn;
+      Object.setPrototypeOf(self, _proto);
+    } // set prototype for object
+  } else if(fn.type && fn.type() === 'object') {
+    if (type === 'function') {
+      self.prototype = fn;
+    } else if (type === 'object') {
+      var _proto = Object.getPrototypeOf(self);
+      if (!_proto) {
+        _proto = {};
+      }
+      // just simple extend for outside control
+      _proto.extend(fn);
+      Object.setPrototypeOf(self, _proto);
+    }
+  }
+});
 
 // change the fontSize for root element
 // basic font size is 100px
-util.whatchRem = function (designWidth) {
+// device namespace
+var device = util.device = {};
+// init common method
+device.prototype(function htmlSize() {
+  return getComputedStyle(query('html').item(0)).fontSize;
+});
+device.whatchRem = function (designWidth) {
   var el = query('html').item(0);
   var event = null;
   var fn = function () {
@@ -1872,7 +1946,7 @@ util.whatchRem = function (designWidth) {
 }
 
 // dynamic change the ratio for viewport
-util.whatchRatio = function (designWidth) {
+device.whatchRatio = function (designWidth) {
   var el = query('meta[name="viewport"]').item(0);
   var ratio = designWidth / clientWidth();
   var event = null;
@@ -1900,4 +1974,14 @@ util.whatchRatio = function (designWidth) {
 
   window.on(event, fn, false);
   window.on('DOMContentLoaded', fn, false);
+}
+
+// translate between px and rem units
+device.px2rem = function (px) {
+  var rs = this.htmlSize();
+  return px / rs + 'rem';
+}
+device.rem2px = function (rem) {
+  var rs = this.htmlSize();
+  return rem * rs + 'px';
 }
