@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/14 8:13
+ * update date: 2018/5/13 11:08
  */
 
 'use strict';
@@ -2175,3 +2175,11 @@ def_obj('swipeDown', function() {
   }
   self.on('touchstart, touchend');
 });
+
+/////////////////////////////////////// URI ///////////////////////////
+util.getUrlParams = function(key) {
+  key = key || 'kw';
+  var regular = new RegExp(key + '=([^&]*)');
+  var result = location.href.match(regular);
+  return result ? decodeURI(result[1]) : null;
+}
