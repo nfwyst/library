@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/6 12:40
+ * update date: 2018/5/14 8:13
  */
 
 'use strict';
@@ -1106,7 +1106,8 @@ function createElementHTML(content) {
   var el;
   div.insertAdjacentHTML('beforeend', content);
   el = div.firstChild;
-  div.remove();
+  div.removeChild(el);
+  div = null;
   return el;
 }
 
@@ -1479,7 +1480,7 @@ def_obj('allChildren', function () {
 });
 /////////////////////////////////////////////////// bind event /////////////////////////////////////////////////
 ///////////////////////         事件代理
-def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
+def_obj('on', function(names, delegateTarget /* = undefined */, callback) {
   var self = this;
   self.eventList = self.eventList ? self.eventList : {
     length: 0
@@ -1487,35 +1488,36 @@ def_obj('on', function(name, delegateTarget /* = undefined */, callback) {
   if(!self.isDOM()) {
     throw Error('event need a dom target')
   }
-  if(!name || typeof name !== 'string' || typeof callback !== 'function') {
+  if(!names || typeof names !== 'string' || typeof callback !== 'function') {
     return false;
   }
-  if(!delegateTarget || delegateTarget === null) {
-    self.addEventListener(/*`${name}`*/ name, callback);
-    self.eventList[name] ? self.eventList[name].push({
-      fn: callback,
-      name: callback.fnName()
-    }) : self.eventList[name] = [];
-    self.eventList.length++;
-  } else if(typeof delegateTarget === 'string'){
-    self.addEventListener(name, function(e) {
-      var target = e.target;
-      var childrens = self.allChildren();
-      for(child of childrens) {
-        var childNames = child.names();
-        if(childNames.includes(delegateTarget) && target === child) {
-          callback(child);
+  names.forEach(function(name, index) {
+    if(!delegateTarget || delegateTarget === null) {
+      self.addEventListener(/*`${name}`*/ name, callback);
+      self.eventList[name] ? self.eventList[name].push({
+        fn: callback,
+        name: callback.fnName()
+      }) : self.eventList[name] = [];
+      self.eventList.length++;
+    } else if(typeof delegateTarget === 'string'){
+      self.addEventListener(name, function(e) {
+        var target = e.target;
+        var childrens = self.allChildren();
+        for(child of childrens) {
+          var childNames = child.names();
+          if(childNames.includes(delegateTarget) && target === child) {
+            callback(child);
+          }
         }
-      }
-    });
-    self.eventList[name] ? self.eventList[name].push({
-      fn: callback,
-      name: callback.fnName()
-    }) : self.eventList[name] = [];
-    self.eventList.length++;
-  } else {
-    return false;
-  }
+      });
+      self.eventList[name] ? self.eventList[name].push({
+        fn: callback,
+        name: callback.fnName()
+      }) : self.eventList[name] = [];
+      self.eventList.length++;
+    }
+  });
+  return self;
 })
 
 ////////////////////////////////////////////////// get function name ////////////////////////////////////////
@@ -1684,7 +1686,7 @@ def_obj('prependElement', function(el) {
     throw Error('the object must be doc element');
   }
   if (typeof el === 'string') {
-    el = crateElementHTML(el);
+    el = createElementHTML(el);
   }
   self.insertBefore(el, self.firstChild);
 });
@@ -1802,7 +1804,7 @@ util.se = function(in = []) {
     return Object.keys ? Object.keys(this).shuffle() : this.keys().shuffle();
   }
   this.values = function () {
-    return Object.keys ? Object.values(this).shuffle() : this.keys().shuffle();
+    return Object.values ? Object.values(this).shuffle() : this.values().shuffle();
   }
   this.size = function () {
     return this.size;
@@ -1930,7 +1932,7 @@ device.whatchRem = function (designWidth) {
   var fn = function () {
     var width = clientWidth();
     if (width) {
-      el.style.fontSize = 100 / designWidth * width + 'px';
+      el.style.fontSize = Number(100 / designWidth * width).toFixed(3) + 'px';
     } else {
       return false;
     }
@@ -1974,6 +1976,7 @@ device.whatchRatio = function (designWidth) {
 
   window.on(event, fn, false);
   window.on('DOMContentLoaded', fn, false);
+  // window.on(`DOMContentLoaded,${event}`, fn, false);
 }
 
 // translate between px and rem units
@@ -1985,3 +1988,190 @@ device.rem2px = function (rem) {
   var rs = this.htmlSize();
   return rem * rs + 'px';
 }
+
+//////////////////////////////////////// device event: just use fn not on //////////////////////
+//////////////////////////////////////// single click, then skip the default click event
+def_obj('tap', function(fn) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var tartTime = null;
+  var endTime = null;
+  function f1(e) {
+    e.preventDefault();
+    switch (e.type) {
+      case 'touchstart':
+        startTime = new Date().getTime();
+        break;
+      case 'touchend':
+        endTime = new Date().getTime();
+        if (endTime - startTime < 500) {
+          fn.call(self, e);
+        }
+        break;
+    }
+  }
+  self.on('touchstart, touchend', f1);
+});
+
+// double tap
+def_obj('doubleTap', function(fn) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var tartTime = null;
+  var endTime = null;
+  function f1(e) {
+    var touches = e.targetTouches;
+    var chtou = e.changedTouches;
+    e.preventDefault();
+    if (touches.length !== 2 || chtou.length !== 2) {
+      return false;
+    }
+    switch (e.type) {
+      case 'touchstart':
+        startTime = new Date().getTime();
+        break;
+      case 'touchend':
+        endTime = new Date().getTime();
+        if (endTime - startTime < 500) {
+          fn.call(self, e);
+        }
+        break;
+    }
+  }
+  self.on('touchstart, touchend', f1);
+})
+
+/////////////////////// long tap //////////////////////////////
+def_obj('longTap', function(fn) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var id;
+  function f1(e) {
+    e.preventDefault();
+    switch (e.type) {
+      case 'touchstart':
+        id = setTimeout(function() {
+          fn.call(self, e);
+        }, 500);
+        break;
+      case 'touchmove':
+        clearTimeout(id);
+        break;
+      case 'touchend':
+        clearTimeout(id);
+        break;
+    }
+  }
+  self.on('touchstart, touchmove, touchend', f1);
+});
+
+///////////////////////////////////////// slide/swipe event ////////////////////////////////
+///////////////////////////////////////// to left
+def_obj('slideLeft', function(fn) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var sx = sy = ex = ey = null;
+  function f1(e) {
+    var firstTouch = e.changedTouches.item(0);
+    e.preventDefault();
+    switch (e.type){
+      case 'touchstart':
+        sx = firstTouch.pageX;
+        sy = firstTouch.pageY;
+        break;
+      case 'touchend':
+        ex = firstTouch.pageX;
+        ey = firstTouch.pageY;
+        if (Math.abs(ex - sx) >= Math.abs(ey - sy) && sx - ex >= 25) {
+          fn.call(self, e);
+        }
+    }
+  }
+  self.on('touchstart, touchend', f1);
+});
+
+// to right
+def_obj('slideRight',function(fn) {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var sx = sy = ex = ey = null;
+  function f1(e) {
+    var firstTouch = e.changedTouches.item(0);
+    e.preventDefault();
+    switch (e.type) {
+      case 'touchstart':
+        sx = firstTouch.pageX;
+        sy = firstTouch.pageY;
+        break;
+      case 'touchend':
+        ex = firstTouch.pageX;
+        ey = firstTouch.pageY;
+        if (Math.abs(ex - sx) >= Math.abs(ey - sy) && ex - sx >= 25) {
+          fn.call(self, e);
+        }
+    }
+  }
+  self.on('touchstart, touchend');
+});
+
+// swipe to up
+def_obj('swipeUp', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var sx = sy = ex = ey = null;
+  function f1(e) {
+    var firstTouch = e.changedTouches.item(0);
+    e.preventDefault();
+    switch (e.type) {
+      case 'touchstart':
+        sx = firstTouch.pageX;
+        sy = firstTouch.pageY;
+        break;
+      case 'touchend':
+        ex = firstTouch.pageX;
+        ey = firstTouch.pageY;
+        if (Math.abs(ex - sx) <= Math.abs(ey - sy) && sy - ey >= 25) {
+          fn.call(self, e);
+        }
+    }
+  }
+  self.on('touchstart, touchend');
+});
+
+// swipe to down
+def_obj('swipeDown', function() {
+  var self = this;
+  if (!self.isDOM()) {
+    throw Error('the object must be an element');
+  }
+  var sx = sy = ex = ey = null;
+  function f1(e) {
+    var firstTouch = e.changedTouches.item(0);
+    e.preventDefault();
+    switch (e.type) {
+      case 'touchstart':
+        sx = firstTouch.pageX;
+        sy = firstTouch.pageY;
+        break;
+      case 'touchend':
+        ex = firstTouch.pageX;
+        ey = firstTouch.pageY;
+        if (Math.abs(ex - sx) <= Math.abs(ey - sy) && ey - sy >= 25) {
+          fn.call(self, e);
+        }
+    }
+  }
+  self.on('touchstart, touchend');
+});
