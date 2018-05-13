@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/13 11:08
+ * update date: 2018/5/13 12:26
  */
 
 'use strict';
@@ -1927,11 +1927,11 @@ device.proto(function htmlSize() {
   return getComputedStyle(query('html').item(0)).fontSize;
 });
 device.whatchRem = function (designWidth) {
-  var el = query('html').item(0);
+  var el = document.documentElement;
   var event = null;
   var fn = function () {
     var width = clientWidth();
-    if (width) {
+    if (width >= 320 && width <= 640) {
       el.style.fontSize = Number(100 / designWidth * width).toFixed(3) + 'px';
     } else {
       return false;
