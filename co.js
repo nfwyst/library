@@ -2368,6 +2368,120 @@ window.Log = new function() {
       y: 0
     }
     this.zIndex = 0;
+    this.belong = null;
   }
-  // TODO
+  this.Container.prototype.add = function(el) {
+    if (Log.type(el) === 'array') {
+      el.forEach(function(item, index) {
+        this.elements.push(item);
+        item.container = this;
+      });
+    } else if (el) {
+      this.elements.push(el);
+      el.container = this;
+    } else {
+      return false;
+    }
+    return this;
+  }
+  this.Container.prototype.remove = function() {
+    this.elements.forEach(function(el) {
+      el.remove();
+    });
+    return this;
+  }
+  this.Render = function() {
+    this.width = 10;
+    this.height = 10;
+    this.canvas = [];
+  }
+  this.Render.prototype.Pixel = function() {
+    this.value= ' ';
+    this.style = [];
+    this.zIndex = 0;
+  }
+  this.Render.prototype.setSize = function(width, height) {
+    this.width = parseInt(width);
+    this.height = parseInt(height);
+    this.canvas = [];
+    for(var i = 0; i < height; i++) {
+      this.canvas.push(new Array(width));
+      for (var j = 0; j < width; j++) {
+        this.canvas[i][j] = new this.Pixel();
+      }
+    }
+  }
+  this.Render.prototype.clear = function(x = 0, y = 0, width, height) {
+    width = parseInt(width ? width : this.width);
+    height = parseInt(height ? height : this.height);
+    for (var i = x; i < x + height && i < this.height; i++) {
+      for(var j = y; j < y + width && j < this.width; j++) {
+        this.canvas[i][j].value = ' ';
+        this.canvas[i][j].style = [];
+        this.canvas[i][j].zIndex = 0;
+      }
+    }
+    console.clear();
+  }
+  this.Render.prototype.print = function(border) {
+    var row = '';
+    var rowId = 0;
+    var style = [];
+    var borderLeft = border ? '' : 'border-left: 1px solid #ccc';
+    var borderRight =  border ? '' : 'border-right: 1px solid #ccc';
+    for(var i = 0; i < this.canvas.length; i++) {
+      row = border ?  '' : '%c ';
+      rowId = '%c' + j;
+      style = border ? [] : [borderLeft];
+      for(var j = 0; j < this.canvas[i].length; j++) {
+        row += '%c' + this.canvas[i][j].value;
+        style.push(this.canvas[i][j].style.join(';'));
+      }
+      style.push('background: #fff; color: #fff;' + borderRight);
+      console.log(row + rowId, ...style);
+    }
+  }
+  this.Render.prototype.printNoStyle = function(border) {
+    var row = '';
+    var rows = '';
+    var border = border ? '' : '|';
+    for(var i = 0; i < this.canvas.length; i++) {
+      row = border;
+      for(var j = 0; j < this.canvas[i].length; j++) {
+        row += this.canvas[i][j].value;
+      }
+      rows += row + border + '\n';
+    }
+    console.log(rows);
+  }
+  this.Render.prototype.render = function(can, style, border) {
+    this.clear();
+
+    can.elements.forEach(function(element, index) {
+      var style = element.style.concat();
+      var zIndex = element.zIndex;
+      var px = Math.floor(element.position.y);
+      var py = Math.floor(element.position.x);
+
+      if (element.container) {
+        px += element.container.position.x;
+        py += element.container.position.y;
+        zIndex += element.container.zIndex;
+      }
+
+      for(var y = py; y < py + element.values.length; y++) {
+        if (y >= 0 && y < this.height) {
+          for(var x = px; x < px + element.values[y - py].length && x < this.width; x++) {
+            if (zIndex >= this.canvas[y][x].zIndex && element.values[y - py][x - px] && element.values[y - py][x - px].toString().trim() !== '') {
+              this.canvas[y][x].value = element.values[y - py][x - px];
+              this.canvas[y][x].style = style.concat();
+              this.canvas[y][x].zIndex = zIndex;
+            }
+          }
+        }
+      }
+    });
+
+    style ? this.printNoStyle(border) : this.print(border);
+  }
 }
