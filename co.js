@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/13 12:26
+ * update date: 2018/5/18 20:39
  */
 
 'use strict';
@@ -2288,7 +2288,7 @@ window.Log = new function() {
       this.scale_X = multiple;
     } else {
       this.scale_X = 1;
-      return true;
+      return this;
     }
 
     if (multiple < 1) {
@@ -2305,6 +2305,8 @@ window.Log = new function() {
         }
       }
     }
+
+    return this;
   }
   this.Element.prototype.scaleY = function (multiple, flag) {
     var scaleX = this.scale_X;
@@ -2333,7 +2335,7 @@ window.Log = new function() {
       this.scale_Y = multiple;
     } else {
       this.scale_Y = 1;
-      return true;
+      return this;
     }
 
     if(multiple < 1) {
@@ -2352,5 +2354,20 @@ window.Log = new function() {
         }
       }
     }
+
+    return this;
   }
+  this.Element.prototype.scale = function(x, y) {
+    this.scaleX(+x).scaleY(+y);
+  }
+  this.Container = function() {
+    this.isContainer = true;
+    this.elements = [];
+    this.position = {
+      x: 0,
+      y: 0
+    }
+    this.zIndex = 0;
+  }
+  // TODO
 }
