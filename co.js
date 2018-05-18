@@ -2185,82 +2185,8 @@ util.getUrlParams = function(key) {
   var result = location.href.match(regular);
   return result ? decodeURI(result[1]) : null;
 }
-/////////////////////////////////////// canvas System TODO //////////////////
-var canvas = {
-  name: 'canvas',
-  instance: null,
-  width: null,
-  height: null,
-  create: function(width, height) {
-    width = width || 300;
-    height = height || 150;
-    var el = document.createElement('canvas');
-    el.setAttribute('width', width);
-    el.setAttribute('height', height);
-    el.setAttribute('id', 'canvas');
-    el.innerHTML = 'please update your brower';
-    this.instance = el;
-    this.width = width;
-    this.height = height;
-    return el;
-  },
-  reset: function(width, height) {
-    this.instance.setAttribute('width', width);
-    this.instance.setAttribute('height', height);
-  },
-  getContext: function() {
-    if (this.instance.getContext) {
-      return this.instance.getContext('2d');
-    } else {
-      return null;
-    }
-  }
-  css: function(obj) {
-    if (typeof obj === 'object') {
-      for (key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          this.instance.style[key] = obj[key];
-        }
-      }
-    } else {
-      return getComputedStyle(this.instance);
-    }
-    return this;
-  }
-  draw: function(cb) {
-    window.onload = function() {
-      cb(this.getContext());
-    }
-    return this;
-  }
-  fillRect: function(style='rgba(0, 0, 0, .5)', points = [0, 0, 300, 150]) {
-    var ctx = this.getContext();
-    ctx.fillStyle = style;
-    if (typeof points.reduce === 'function') {
-      ctx.fillRect(points[0], points[1], points[2], points[3]);
-    } else {
-      ctx.fillRect(points.x1, points.y1, points.x2, points.y2);
-    }
-    return this;
-  }
-  strokeRect: function(style='rgba(0, 0, 0, .5)', points = [0, 0, 300, 150]) {
-    var ctx = this.getContext();
-    ctx.strokeStyle = style;
-    if (typeof points.reduce === 'function') {
-      ctx.strokeRect(points[0], points[1], points[2], points[3]);
-    } else {
-      ctx.strokeRect(points.x1, points.y1, points.x2, points.y2);
-    }
-    return this;
-  }
-  clear: function() {
-    var ctx = this.getContext();
-    ctx.clearRect(this.width, this.height);
-  }
-  // TODO
-}
 
-/////////////////////////////// Log System //////////////////////////////////////
+/////////////////////////////// new Log System //////////////////////////////////////
 window.Log = new function() {
   // tool
   this.type = function (o) {
