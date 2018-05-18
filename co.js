@@ -2285,6 +2285,7 @@ window.Log = new function() {
           item[index2] = ' ';
         });
       });
+      this.scale_X = multiple;
     } else {
       this.scale_X = 1;
       return true;
@@ -2294,7 +2295,6 @@ window.Log = new function() {
       this.values.forEach(function(item, index) {
         item.splice(Math.ceil(item.length * multiple));
       });
-      this.scale_X = multiple;
     } else if (multiple > 1) {
       // fix length bug
       for(var i = 0; i < this.values.length; i++) {
