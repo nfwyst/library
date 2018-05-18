@@ -2296,14 +2296,61 @@ window.Log = new function() {
       });
       this.scale_X = multiple;
     } else if (multiple > 1) {
-      this.values.forEach(function(item, index1) {
-        item.forEach(function(val, index2) {
-            if (val === undefined) {
-              item[index2] = ' ';
-            }
-        });
-      });
+      // fix length bug
+      for(var i = 0; i < this.values.length; i++) {
+        for(var j = 0; j < this.values[i].length; j++) {
+          if (this.values[i][j] === undefined) {
+            this.values[i][j] = ' ';
+          }
+        }
+      }
     }
   }
-  // scaleY the same to scaleX TODO
+  this.Element.prototype.scaleY = function (multiple, flag) {
+    var scaleX = this.scale_X;
+    var length = this.width();
+    multiple = +multiple;
+    if (this.valuesCopy) {
+      this.values = JSON.parse(JSON.stringify(this.valuesCopy));
+    } else {
+      this.valuesCopy = JSON.parse(JSON.stringify(this.values));
+    }
+
+    if (!flag) {
+      this.scaleX(scaleX, true);
+    }
+
+    if (multiple < 1 || multiple > 1) {
+      this.values.forEach(function(item, index1) {
+        item.forEach(function(val, index2) {
+          if (!this.values[Math.floor(index1 * multiple)]) {
+            this.values[Math.floor(index1 * multiple)] = [];
+          }
+          this.values[Math.floor(index1 * multiple)][index2] = val;
+          this.values[index1][index2] = ' ';
+        });
+      });
+      this.scale_Y = multiple;
+    } else {
+      this.scale_Y = 1;
+      return true;
+    }
+
+    if(multiple < 1) {
+      this.values.splice(Math.ceil(this.values.length * multiple));
+    } else if (multiple > 1) {
+      for(var i = 0; i < this.values.length; i++) {
+        if (this.values[i]) {
+          for(var j = 0; j < this.values[i].length; j++) {
+            if (this.values[i][j] === undefined) {
+              this.values[i].splice(j);
+              break;
+            }
+          }
+        } else {
+          this.values[i] = [' '];
+        }
+      }
+    }
+  }
 }
