@@ -2341,7 +2341,6 @@ window.Log = new function() {
     }
   }
   this.Element.prototype.scaleX = function(multiple, flag) {
-    var i, j;
     var scaleY = this.scale_Y;
     multiple = +multiple;
     if (this.valuesCopy) {
