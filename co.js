@@ -1931,7 +1931,9 @@ device.whatchRem = function (designWidth) {
   var event = null;
   var fn = function () {
     var width = clientWidth();
-    if (width >= 320 && width <= 640) {
+    width = width < 320 ? 320 : width;
+    width = width > 640 ? 640 : width;
+    if (width) {
       el.style.fontSize = Number(100 / designWidth * width).toFixed(3) + 'px';
     } else {
       return false;
@@ -2182,4 +2184,201 @@ util.getUrlParams = function(key) {
   var regular = new RegExp(key + '=([^&]*)');
   var result = location.href.match(regular);
   return result ? decodeURI(result[1]) : null;
+}
+/////////////////////////////////////// canvas System TODO //////////////////
+var canvas = {
+  name: 'canvas',
+  instance: null,
+  width: null,
+  height: null,
+  create: function(width, height) {
+    width = width || 300;
+    height = height || 150;
+    var el = document.createElement('canvas');
+    el.setAttribute('width', width);
+    el.setAttribute('height', height);
+    el.setAttribute('id', 'canvas');
+    el.innerHTML = 'please update your brower';
+    this.instance = el;
+    this.width = width;
+    this.height = height;
+    return el;
+  },
+  reset: function(width, height) {
+    this.instance.setAttribute('width', width);
+    this.instance.setAttribute('height', height);
+  },
+  getContext: function() {
+    if (this.instance.getContext) {
+      return this.instance.getContext('2d');
+    } else {
+      return null;
+    }
+  }
+  css: function(obj) {
+    if (typeof obj === 'object') {
+      for (key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          this.instance.style[key] = obj[key];
+        }
+      }
+    } else {
+      return getComputedStyle(this.instance);
+    }
+    return this;
+  }
+  draw: function(cb) {
+    window.onload = function() {
+      cb(this.getContext());
+    }
+    return this;
+  }
+  fillRect: function(style='rgba(0, 0, 0, .5)', points = [0, 0, 300, 150]) {
+    var ctx = this.getContext();
+    ctx.fillStyle = style;
+    if (typeof points.reduce === 'function') {
+      ctx.fillRect(points[0], points[1], points[2], points[3]);
+    } else {
+      ctx.fillRect(points.x1, points.y1, points.x2, points.y2);
+    }
+    return this;
+  }
+  strokeRect: function(style='rgba(0, 0, 0, .5)', points = [0, 0, 300, 150]) {
+    var ctx = this.getContext();
+    ctx.strokeStyle = style;
+    if (typeof points.reduce === 'function') {
+      ctx.strokeRect(points[0], points[1], points[2], points[3]);
+    } else {
+      ctx.strokeRect(points.x1, points.y1, points.x2, points.y2);
+    }
+    return this;
+  }
+  clear: function() {
+    var ctx = this.getContext();
+    ctx.clearRect(this.width, this.height);
+  }
+  // TODO
+}
+
+/////////////////////////////// Log System //////////////////////////////////////
+window.Log = new function() {
+  // tool
+  this.type = function (o) {
+    Object.prototype.toString.call(o).replace(/^\[\w+ (.+)\]$/, '$1').toLowerCase();
+  }
+  // Canvas container
+  this.Canvas = function (name = '', style) {
+    this.elements = [];
+    this.style = Log.type(style) === 'array' ? style : [];
+    this.name = name.toString();
+  }
+  this.Canvas.prototype.add = function (el) {
+    if(!el || Object.is(el, null)) return false;
+    el.belong = this;
+
+    if (el.belong !== this) {
+      return false;
+    }
+
+    if (el.isContainer && el.elements) {
+      el.elements.forEach(function(element, index) {
+        this.elements.push(element);
+      });
+    } else {
+      this.elements.push(el);
+    }
+  }
+  // element
+  this.Element = function(values = [[]], style = [], zIndex = 1, position) {
+    // every element has the only single id
+    this.id = Number(Math.random().toString().substr(2, 1) + Date.now()).toString(36);
+    this.values = values;
+    this.style = this.type(style) === 'array' ? style : [];
+    this.zIndex = zIndex;
+    this.scale_X = 1;
+    this.scale_Y = 1;
+    this.position = {
+      x: position && position.x ? position.x : 0,
+      y: position && position.y ? position.y : 0
+    },
+    this.container = null;
+    this.belong = null;
+  }
+  this.Element.prototype.clone = function() {
+    return new this.constructor(JSON.parse(JSON.stringify(this.values)), this.style.concat([]), this.zIndex, this.position);
+  }
+  this.Element.prototype.remove = function() {
+    var canvas = this.container ? this.container.belong : this.belong;
+    var index = canvas.elements.findIndex(function(el) {
+      return el.id === this.id;
+    });
+    if (index >= 0) {
+      canvas.elements.splice(index, 1);
+    }
+  }
+  // cut width not increment width or get the max width
+  this.Element.prototype.width = function(width) {
+    width = parseInt(width);
+    if (width && width > 0) {
+      this.values.forEach(function(item, index) {
+        item.splice(width);
+      });
+      return width;
+    } else {
+      return Math.max.apply(null, this.values.map(function(item, index) {
+        return item.length;
+      }));
+    }
+  }
+  // its same with width
+  this.Element.prototype.height = function(height) {
+    height = parseInt(height);
+    if (height && height > 0) {
+      this.values.splice(height);
+      return height;
+    } else {
+      return this.values.length;
+    }
+  }
+  this.Element.prototype.scaleX = function(multiple, flag) {
+    var i, j;
+    var scaleY = this.scale_Y;
+    multiple = +multiple;
+    if (this.valuesCopy) {
+      this.values = JSON.parse(JSON.stringify(this.valuesCopy));
+    } else {
+      this.valuesCopy = JSON.parse(JSON.stringify(this.values));
+    }
+
+    if (!flag) {
+      this.scaleY(scaleY, true);
+    }
+    if (multiple < 1 || multiple > 1) { // scale_X
+      this.values.forEach(function(item, index1) {
+        item.forEach(function(val, index2) {
+          item[Math.ceil(index2 * multiple)] = val;
+          item[index2] = ' ';
+        });
+      });
+    } else {
+      this.scale_X = 1;
+      return true;
+    }
+
+    if (multiple < 1) {
+      this.values.forEach(function(item, index) {
+        item.splice(Math.ceil(item.length * multiple));
+      });
+      this.scale_X = multiple;
+    } else if (multiple > 1) {
+      this.values.forEach(function(item, index1) {
+        item.forEach(function(val, index2) {
+            if (val === undefined) {
+              item[index2] = ' ';
+            }
+        });
+      });
+    }
+  }
+  // scaleY the same to scaleX TODO
 }
