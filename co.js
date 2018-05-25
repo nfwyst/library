@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/18 22:50
+ * update date: 2018/5/25 18:00
  */
 
 'use strict';
@@ -2484,4 +2484,56 @@ window.Log = new function() {
 
     style ? this.printNoStyle(border) : this.print(border);
   }
+}
+//////////////////////////////////// whatch the data change of attributes of an object /////////////////////////////////
+// eg:
+// var wm = new util.Watcher({
+//     data:{
+//         class: 'red',
+//         id: 'app'
+//     },
+//     watch:{
+//         class: function (newVal,oldVal){
+//           console.log(this, newVal, oldVal);
+//         },
+//         id: function(newVal, oldVal) {
+//           console.log(this, newVal, oldVal);
+//         }
+//     }
+// })
+// wm.class = 'pink' ==> [obj, red: oldVal, pink: newVal]
+util.Watcher = function(options) {
+  this.$data = this.type(options.data) === 'object'
+                    ? options.data : {};
+  this.$watch = this.type(options.watch) === 'object'
+                    ? options.watch : {};
+  this.set();
+}
+util.Watcher.prototype.set = function() {
+  for(_key in this.$data) {
+    var self = this;
+    (function(_key) {
+      Object.defineProperty(self, _key, {
+        get: function() {
+          return this.$data[_key]
+        },
+        set: function(val) {
+          var oldVal = this.$data[_key];
+          if(val === oldVal) {
+            return val;
+          } else {
+            this.$data[_key] = val;
+            if(this.$watch[_key]
+              && this.type(this.$watch[_key]) === 'function') {
+              this.$watch[_key]
+                  .call(this, oldVal, this.$data[_key]);
+            }
+          }
+        }
+      });
+    }(_key));
+  }
+}
+util.Watcher.prototype.type = function(o) {
+  return Object.prototype.toString.call(o).replace(/^\[\w+ (\w+)\]$/, '$1').toLowerCase();
 }
