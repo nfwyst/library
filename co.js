@@ -2537,3 +2537,33 @@ util.Watcher.prototype.set = function() {
 util.Watcher.prototype.type = function(o) {
   return Object.prototype.toString.call(o).replace(/^\[\w+ (\w+)\]$/, '$1').toLowerCase();
 }
+
+//////////////////////////////// Proxy //////////////////////////////
+def_arr('proxy', function(cb) {
+  var self = this;
+  return new Proxy(self, {
+    get (target, name) {
+      cb(target, name) 
+    }
+  })
+})
+// proxy like arr['1:4']
+def_arr('slice', function(args) {
+  var self = this;
+  var res = self.proxy(function(target, name) {
+    if(name.includes(':')) {
+      var indexs = name.split(':')
+      return target.slice(indexs[0], indexs[1])
+    } else {
+      return target[name]
+    }
+  })
+
+  res = res(args)
+
+  if(res.length > 0) {
+    return res;
+  } else {
+    return Array.prototype.slice.apply(self, arguments)
+  }
+})
