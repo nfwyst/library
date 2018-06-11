@@ -1,7 +1,7 @@
 /**
  * author: nfwyst
  * date: 2017/5/25
- * update date: 2018/5/25 18:00
+ * update date: 2018/6/11 22:46
  */
 
 'use strict';
@@ -2543,7 +2543,7 @@ def_arr('proxy', function(cb) {
   var self = this;
   return new Proxy(self, {
     get (target, name) {
-      cb(target, name) 
+      cb(target, name)
     }
   })
 })
@@ -2567,3 +2567,71 @@ def_arr('slice', function(args) {
     return Array.prototype.slice.apply(self, arguments)
   }
 })
+
+///////////////////////////////////////// Async section ////////////////////////////////
+///// Promise for Unsupported browsers
+util = util || {};
+util.Promise = function (fn) {
+  var value = null;
+  var PENDING = Symbol ? Symbol() : 'PEDING';
+  var FULFILLED = Symbol ? Symbol() : 'FULFILLED';
+  var REJECTED = Symbol ? Symbol() : 'REJECTED';
+  var state = PENDING;
+  var handler = {};
+  function fulfill(val) {
+    state = FULFILLED;
+    value = val;
+    next(handler);
+  }
+  function reject(err) {
+    state = REJECTED;
+    value = err;
+    next(handler);
+  }
+  function next(callbacks) {
+    switch (state) {
+      case FULFILLED:
+        callbacks.onFulfill && callbacks.onFulfill(value);
+        break;
+      case REJECTED:
+        callbacks.onReject && callbacks.onReject(value);
+        break;
+      case PENDING:
+        handler = { onFulfill: callbacks.onFulfill, onReject: callbacks.onReject };
+    }
+  }
+  this.then = function (onFulfill, onReject) {
+    return new Promise(function (resolve, reject) {
+      next({
+        onFulfill: function (val) {
+          try {
+            var nval = onFulfill(val);
+          } catch (e) {
+            reject(e);
+            return false;
+          }
+          if (nval && typeof nval.then === 'function') {
+            nval.then(resolve, reject);
+          } else {
+            resolve(nval);
+          }
+        },
+        onReject: function (err) {
+          try {
+            var nerr = onReject(err);
+          } catch (e) {
+            reject(e);
+            return false;
+          }
+          if (nerr && typeof nerr.then === 'function') {
+            nerr.then(resolve, reject);
+          } else {
+            reject(nerr);
+          }
+        }
+      });
+    });
+  }
+  fn(fulfill, reject);
+}
+Promise = Promise || util.Promise;
