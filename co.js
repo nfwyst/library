@@ -2577,16 +2577,18 @@ util.Promise = function (fn) {
   var FULFILLED = Symbol ? Symbol() : 'FULFILLED';
   var REJECTED = Symbol ? Symbol() : 'REJECTED';
   var state = PENDING;
-  var handler = {};
+  var handler = [];
   function fulfill(val) {
     state = FULFILLED;
     value = val;
-    next(handler);
+    handler.forEach(next);
+    handler = [];
   }
   function reject(err) {
     state = REJECTED;
     value = err;
-    next(handler);
+    handler.forEach(next);
+    handler = [];
   }
   function next(callbacks) {
     switch (state) {
@@ -2597,7 +2599,7 @@ util.Promise = function (fn) {
         callbacks.onReject && callbacks.onReject(value);
         break;
       case PENDING:
-        handler = { onFulfill: callbacks.onFulfill, onReject: callbacks.onReject };
+        handler.push({ onFulfill: callbacks.onFulfill, onReject: callbacks.onReject });
     }
   }
   this.then = function (onFulfill, onReject) {
