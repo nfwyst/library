@@ -2637,3 +2637,32 @@ util.Promise = function (fn) {
   fn(fulfill, reject);
 }
 Promise = Promise || util.Promise;
+
+//  String to Number
+util.atoi = function (str) {
+    let value = parseInt(str);
+    if(value >= 2147483647) {
+        return 2147483647;
+    } else if(value <= -2147483648){
+        return -2147483648;
+    }else if(isNaN(value)){
+        return 0;
+    } else {
+        return value;
+    }
+}
+
+// document ready
+util.ready = function(cb) {
+  if(document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', cb, false);
+  } else if(document.attachEvent) {
+    document.attachEvent('onreadystatechange', function() {
+      if(document.readyState === 'interactive') {
+        cb(window.event);
+      }
+    })
+  } else {
+    window.onload = cb;
+  }
+}
