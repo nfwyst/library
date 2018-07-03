@@ -2666,3 +2666,8 @@ util.ready = function(cb) {
     window.onload = cb;
   }
 }
+
+// Convert angle to radians
+util.deg2rad = function(angle) {
+  return angle * Math.PI / 180
+}
