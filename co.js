@@ -2671,3 +2671,30 @@ util.ready = function(cb) {
 util.deg2rad = function(angle) {
   return angle * Math.PI / 180
 }
+
+// Subscribe and Publish tool
+util.SubPub = (function() {
+  let subscribeList = [];
+
+  const subscribe = (message, executor) => {
+    subscribeList = subscribeList.filter(sub => sub.message !== message);
+    subscribeList.push({
+      message,
+      executor,
+    });
+  };
+
+  const publish = (message, data) => {
+    const sub = subscribeList.find(sub => sub.message === message);
+    try {
+      sub.executor(data);
+    } catch (e) {
+      throw new Error('no such subscribe type');
+    }
+  };
+   
+  return {
+    subscribe,
+    publish,
+  }
+})(); 
