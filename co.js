@@ -2698,3 +2698,11 @@ util.SubPub = (function() {
     publish,
   }
 })(); 
+
+// range generator
+util.range = function(start, end) {
+  if (typeof start !== 'number' || typeof end !== 'number') {
+    throw new Error('start and end must be number'); 
+  }
+  return Array(end - start).fill(_).map((_, i) => i + start);
+}
