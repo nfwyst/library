@@ -2706,3 +2706,17 @@ util.range = function(start, end) {
   }
   return Array(end - start).fill(_).map((_, i) => i + start);
 }
+
+// deep freeze an object
+util.freeze = function(obj) {
+  if(typeof obj !== 'object') {
+    return null; 
+  }
+  Object.freeze(obj);
+  Object.getOwnPropertyNames(obj).forEach(function(item, _) {
+    if(obj[item] && (typeof obj[item] === 'object' || typeof obj[item] === 'function') && !Object.isFrozen(obj[item])) {
+      util.freeze(obj[item]);
+    }
+  });
+  return obj;
+}
